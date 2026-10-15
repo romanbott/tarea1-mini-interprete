@@ -27,7 +27,12 @@ class Parser:
 
     def parsear(self):
         """Construye el AST de la lista de tokens."""
-        return self._expresion()
+        nodo = self._expresion()
+        sobrante = self._actual()
+        if sobrante is not None:
+            raise ErrorDeSintaxis(f"token inesperado {sobrante.valor!r}",
+                                  sobrante.posicion)
+        return nodo
 
     def _actual(self):
         """El token en la posicion actual, o None si ya no quedan."""
