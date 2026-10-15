@@ -155,3 +155,31 @@ def test_anidamiento_profundo():
 def test_rechaza_una_lista_de_tokens_vacia():
     with pytest.raises(ErrorDeSintaxis):
         Parser([]).parsear()
+
+
+def test_rechaza_un_token_inesperado_al_inicio():
+    tokens = [
+        Token(TipoToken.MAS, "+", 0),
+        Token(TipoToken.NUMERO, 3, 1),
+    ]
+    with pytest.raises(ErrorDeSintaxis) as error:
+        Parser(tokens).parsear()
+    assert error.value.posicion == 0
+
+
+def test_rechaza_un_parentesis_sin_cerrar():
+    tokens = [
+        Token(TipoToken.PAR_IZQ, "(", 0),
+        Token(TipoToken.NUMERO, 3, 1),
+    ]
+    with pytest.raises(ErrorDeSintaxis):
+        Parser(tokens).parsear()
+
+
+def test_rechaza_un_operador_sin_operando():
+    tokens = [
+        Token(TipoToken.NUMERO, 3, 0),
+        Token(TipoToken.MAS, "+", 1),
+    ]
+    with pytest.raises(ErrorDeSintaxis):
+        Parser(tokens).parsear()
