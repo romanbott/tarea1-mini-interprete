@@ -183,3 +183,12 @@ def test_rechaza_un_operador_sin_operando():
     ]
     with pytest.raises(ErrorDeSintaxis):
         Parser(tokens).parsear()
+
+
+def test_rechaza_un_parentesis_de_mas():
+    tokens = [
+        Token(TipoToken.NUMERO, 3, 0),
+        Token(TipoToken.PAR_DER, ")", 1),
+    ]
+    with pytest.raises(ErrorDeSintaxis):
+        Parser(tokens).parsear()
