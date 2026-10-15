@@ -5,7 +5,10 @@ a `Parser(...).parsear()` directamente, sin pasar por el lexer.
 Así un defecto del lexer no se confunde con uno del parser.
 """
 
+import pytest
+
 from mini_interprete.ast import Numero, OperacionBinaria
+from mini_interprete.errores import ErrorDeSintaxis
 from mini_interprete.parser import Parser
 from mini_interprete.tokens import TipoToken, Token
 
@@ -144,3 +147,11 @@ def test_anidamiento_profundo():
         OperacionBinaria("+", Numero(2), Numero(3)),
         OperacionBinaria("-", Numero(4), Numero(1)),
     )
+
+
+# --- Casos invalidos ---
+
+
+def test_rechaza_una_lista_de_tokens_vacia():
+    with pytest.raises(ErrorDeSintaxis):
+        Parser([]).parsear()
