@@ -41,6 +41,12 @@ class Parser:
         self.pos += 1
         return token
 
+    def _posicion_final(self):
+        """La posicion justo despues del ultimo token (el final del texto)."""
+        if self.tokens:
+            return self.tokens[-1].posicion + 1
+        return 0
+
     def _expresion(self):
         izquierda = self._termino()
         actual = self._actual()
@@ -60,16 +66,23 @@ class Parser:
         return izquierda
 
     def _factor(self):
-        token = self._avanzar()
+        token = self._actual()
+        if token is None:
+            raise ErrorDeSintaxis("se esperaba una expresion",
+                                  self._posicion_final())
+        self._avanzar()
 
         if token.tipo == TipoToken.NUMERO:
             return Numero(token.valor)
 
         if token.tipo == TipoToken.PAR_IZQ:
             nodo = self._expresion()
-            cierre = self._avanzar()
+            cierre = self._actual()
+            if cierre is None:
+                raise ErrorDeSintaxis("se esperaba ')'", self._posicion_final())
             if cierre.tipo != TipoToken.PAR_DER:
                 raise ErrorDeSintaxis("se esperaba ')'", cierre.posicion)
+            self._avanzar()
             return nodo
 
         raise ErrorDeSintaxis(f"token inesperado {token.valor!r}", token.posicion)
