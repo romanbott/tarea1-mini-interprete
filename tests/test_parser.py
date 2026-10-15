@@ -192,3 +192,16 @@ def test_rechaza_un_parentesis_de_mas():
     ]
     with pytest.raises(ErrorDeSintaxis):
         Parser(tokens).parsear()
+
+
+def test_rechaza_dos_expresiones_sin_operador():
+    tokens = [
+        Token(TipoToken.PAR_IZQ, "(", 0),
+        Token(TipoToken.NUMERO, 1, 1),
+        Token(TipoToken.PAR_DER, ")", 2),
+        Token(TipoToken.PAR_IZQ, "(", 3),
+        Token(TipoToken.NUMERO, 2, 4),
+        Token(TipoToken.PAR_DER, ")", 5),
+    ]
+    with pytest.raises(ErrorDeSintaxis):
+        Parser(tokens).parsear()
