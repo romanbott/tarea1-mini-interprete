@@ -9,7 +9,7 @@ la integración de varios pasos del _pipeline_:
 import pytest
 
 from mini_interprete.ast import Numero, OperacionBinaria
-from mini_interprete.cli import interpretar
+from mini_interprete import interpretar
 from mini_interprete.errores import ErrorDeSintaxis
 from mini_interprete.lexer import tokenizar
 from mini_interprete.operadores import Operador

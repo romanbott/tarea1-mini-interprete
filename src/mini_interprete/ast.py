@@ -54,3 +54,29 @@ class OperacionBinaria(Nodo):
         return (self.operador == otro.operador
                 and self.izquierda == otro.izquierda
                 and self.derecha == otro.derecha)
+
+
+def formatear_arbol(nodo: Nodo, prefijo: str = "", rama: str = "") -> list[str]:
+    """Dibuja el AST como un arbol de texto.
+
+    Sirve para VER como quedo agrupada una expresion, en vez de suponerlo.
+    Es la misma idea que el imprimirPorNiveles() de la Practica 3: cuando algo
+    no cuadra, lo primero es mirar la estructura.
+    """
+    if isinstance(nodo, Numero):
+        return [prefijo + rama + str(nodo.valor)]
+
+    if not isinstance(nodo, OperacionBinaria):
+        raise TypeError(f"nodo desconocido: {nodo!r}")
+
+    lineas = [prefijo + rama + nodo.operador.simbolo]
+    if rama == "":
+        prefijo_hijos = prefijo
+    elif rama.startswith("`"):
+        prefijo_hijos = prefijo + "    "
+    else:
+        prefijo_hijos = prefijo + "|   "
+
+    lineas += formatear_arbol(nodo.izquierda, prefijo_hijos, "|-- ")
+    lineas += formatear_arbol(nodo.derecha, prefijo_hijos, "`-- ")
+    return lineas
