@@ -32,11 +32,12 @@ def main(argv: list[str] | None = None) -> int:
 
 def _procesar_entrada(comando: str, flujo: Iterable[str]) -> int:
     """Corre el comando sobre cada linea de la entrada."""
+    codigo = 0
     for linea in flujo:
         linea = linea.strip()
-        if linea:
-            _ejecutar(comando, linea)
-    return 0
+        if linea and _ejecutar(comando, linea):
+            codigo = 1
+    return codigo
 
 
 def _elegir_comando(argv: list[str]) -> tuple[str, list[str]]:
