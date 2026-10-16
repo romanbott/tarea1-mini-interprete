@@ -20,7 +20,6 @@ OPERADORES_PRODUCTO = (TipoToken.POR, TipoToken.ENTRE)
 
 
 class Parser:
-
     def __init__(self, tokens: list):
         self.tokens = tokens
         self.pos = 0
@@ -30,8 +29,9 @@ class Parser:
         nodo = self._expresion()
         sobrante = self._actual()
         if sobrante is not None:
-            raise ErrorDeSintaxis(f"token inesperado {sobrante.valor!r}",
-                                  sobrante.posicion)
+            raise ErrorDeSintaxis(
+                f"token inesperado {sobrante.valor!r}", sobrante.posicion
+            )
         return nodo
 
     def _actual(self):
@@ -54,11 +54,10 @@ class Parser:
 
     def _expresion(self):
         izquierda = self._termino()
-        actual = self._actual()
-        if actual is not None and actual.tipo in OPERADORES_SUMA:
+        while self._actual() is not None and self._actual().tipo in OPERADORES_SUMA:
             operador = self._avanzar()
-            derecha = self._expresion()
-            return OperacionBinaria(operador.valor, izquierda, derecha)
+            derecha = self._termino()
+            izquierda = OperacionBinaria(operador.valor, izquierda, derecha)
         return izquierda
 
     def _termino(self):
@@ -73,8 +72,7 @@ class Parser:
     def _factor(self):
         token = self._actual()
         if token is None:
-            raise ErrorDeSintaxis("se esperaba una expresion",
-                                  self._posicion_final())
+            raise ErrorDeSintaxis("se esperaba una expresion", self._posicion_final())
         self._avanzar()
 
         if token.tipo == TipoToken.NUMERO:
