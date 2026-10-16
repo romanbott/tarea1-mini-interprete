@@ -6,7 +6,7 @@
 from .errores import ErrorDeSintaxis
 from .tokens import Token, TipoToken
 
-SIMBOLOS = {
+SIMBOLOS: dict[str, TipoToken] = {
     "+": TipoToken.MAS,
     "-": TipoToken.MENOS,
     "*": TipoToken.POR,
@@ -16,9 +16,9 @@ SIMBOLOS = {
 }
 
 
-def tokenizar(texto: str) -> list:
+def tokenizar(texto: str) -> list[Token]:
     """Parte el texto en tokens."""
-    tokens = []
+    tokens: list[Token] = []
     i = 0
     while i < len(texto):
         caracter = texto[i]

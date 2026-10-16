@@ -11,20 +11,20 @@ y no como  (3 + 4) * 2 : la multiplicacion vive un nivel mas abajo, asi que
 se arma primero.
 """
 
-from .ast import Numero, OperacionBinaria
+from .ast import Nodo, Numero, OperacionBinaria
 from .errores import ErrorDeSintaxis
-from .tokens import TipoToken
+from .tokens import TipoToken, Token
 
-OPERADORES_SUMA = (TipoToken.MAS, TipoToken.MENOS)
-OPERADORES_PRODUCTO = (TipoToken.POR, TipoToken.ENTRE)
+OPERADORES_SUMA: tuple[TipoToken, TipoToken] = (TipoToken.MAS, TipoToken.MENOS)
+OPERADORES_PRODUCTO: tuple[TipoToken, TipoToken] = (TipoToken.POR, TipoToken.ENTRE)
 
 
 class Parser:
-    def __init__(self, tokens: list):
+    def __init__(self, tokens: list[Token]) -> None:
         self.tokens = tokens
         self.pos = 0
 
-    def parsear(self):
+    def parsear(self) -> Nodo:
         """Construye el AST de la lista de tokens."""
         nodo = self._expresion()
         sobrante = self._actual()
@@ -34,25 +34,25 @@ class Parser:
             )
         return nodo
 
-    def _actual(self):
+    def _actual(self) -> Token | None:
         """El token en la posicion actual, o None si ya no quedan."""
         if self.pos < len(self.tokens):
             return self.tokens[self.pos]
         return None
 
-    def _avanzar(self):
+    def _avanzar(self) -> Token:
         """Consume el token actual y lo regresa."""
         token = self.tokens[self.pos]
         self.pos += 1
         return token
 
-    def _posicion_final(self):
+    def _posicion_final(self) -> int:
         """La posicion justo despues del ultimo token (el final del texto)."""
         if self.tokens:
             return self.tokens[-1].posicion + 1
         return 0
 
-    def _expresion(self):
+    def _expresion(self) -> Nodo:
         izquierda = self._termino()
         while self._actual() is not None and self._actual().tipo in OPERADORES_SUMA:
             operador = self._avanzar()
@@ -60,7 +60,7 @@ class Parser:
             izquierda = OperacionBinaria(operador.valor, izquierda, derecha)
         return izquierda
 
-    def _termino(self):
+    def _termino(self) -> Nodo:
         izquierda = self._factor()
         while self._actual() is not None and self._actual().tipo in OPERADORES_PRODUCTO:
             operador = self._avanzar()
@@ -68,7 +68,7 @@ class Parser:
             izquierda = OperacionBinaria(operador.valor, izquierda, derecha)
         return izquierda
 
-    def _factor(self):
+    def _factor(self) -> Nodo:
         token = self._actual()
         if token is None:
             raise ErrorDeSintaxis("se esperaba una expresion", self._posicion_final())

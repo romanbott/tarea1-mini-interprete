@@ -13,7 +13,10 @@ class ErrorDelInterprete(Exception):
 class ErrorDeSintaxis(ErrorDelInterprete):
     """La entrada no forma una expresion valida."""
 
-    def __init__(self, mensaje: str, posicion: int):
+    mensaje: str
+    posicion: int
+
+    def __init__(self, mensaje: str, posicion: int) -> None:
         self.mensaje = mensaje
         self.posicion = posicion
         super().__init__(f"{mensaje} (posicion {posicion})")

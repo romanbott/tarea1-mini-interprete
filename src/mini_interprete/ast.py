@@ -18,29 +18,35 @@ class Nodo:
 
 
 class Numero(Nodo):
-    def __init__(self, valor):
+    valor: int
+
+    def __init__(self, valor: int) -> None:
         self.valor = valor
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Numero({self.valor})"
 
-    def __eq__(self, otro):
+    def __eq__(self, otro: object) -> bool:
         if not isinstance(otro, Numero):
             return NotImplemented
         return self.valor == otro.valor
 
 
 class OperacionBinaria(Nodo):
-    def __init__(self, operador: str, izquierda: Nodo, derecha: Nodo):
+    operador: str
+    izquierda: Nodo
+    derecha: Nodo
+
+    def __init__(self, operador: str, izquierda: Nodo, derecha: Nodo) -> None:
         self.operador = operador
         self.izquierda = izquierda
         self.derecha = derecha
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f"OperacionBinaria({self.operador!r}, "
                 f"{self.izquierda!r}, {self.derecha!r})")
 
-    def __eq__(self, otro):
+    def __eq__(self, otro: object) -> bool:
         if not isinstance(otro, OperacionBinaria):
             return NotImplemented
         return (self.operador == otro.operador

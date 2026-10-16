@@ -7,19 +7,19 @@
 
 import sys
 
-from .ast import Numero
+from .ast import Nodo, Numero
 from .errores import ErrorDelInterprete
 from .evaluator import evaluar
 from .lexer import tokenizar
 from .parser import Parser
 
 
-def interpretar(texto: str):
+def interpretar(texto: str) -> int | float:
     """texto -> tokens -> AST -> valor. El recorrido completo, en una linea."""
     return evaluar(Parser(tokenizar(texto)).parsear())
 
 
-def formatear_arbol(nodo, prefijo: str = "", rama: str = "") -> list:
+def formatear_arbol(nodo: Nodo, prefijo: str = "", rama: str = "") -> list[str]:
     """Dibuja el AST como un arbol de texto.
 
     Sirve para VER como quedo agrupada una expresion, en vez de suponerlo.
@@ -42,7 +42,7 @@ def formatear_arbol(nodo, prefijo: str = "", rama: str = "") -> list:
     return lineas
 
 
-def main(argv=None) -> int:
+def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
 
     mostrar_arbol = "--arbol" in argv

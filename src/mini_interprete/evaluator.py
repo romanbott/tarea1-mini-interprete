@@ -4,11 +4,11 @@ Recorre el arbol de abajo hacia arriba: para evaluar una operacion hay que
 evaluar primero sus dos lados.
 """
 
-from .ast import Numero, OperacionBinaria
+from .ast import Nodo, Numero, OperacionBinaria
 from .errores import ErrorDeEvaluacion
 
 
-def evaluar(nodo):
+def evaluar(nodo: Nodo) -> int | float:
     """Evalua un nodo del AST y regresa su valor."""
     if isinstance(nodo, Numero):
         return nodo.valor

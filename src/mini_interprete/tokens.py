@@ -20,15 +20,19 @@ class Token:
     exacto donde algo salio mal.
     """
 
-    def __init__(self, tipo: TipoToken, valor, posicion: int):
+    tipo: TipoToken
+    valor: int | str
+    posicion: int
+
+    def __init__(self, tipo: TipoToken, valor: int | str, posicion: int) -> None:
         self.tipo = tipo
         self.valor = valor
         self.posicion = posicion
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Token({self.tipo.name}, {self.valor!r}, {self.posicion})"
 
-    def __eq__(self, otro):
+    def __eq__(self, otro: object) -> bool:
         if not isinstance(otro, Token):
             return NotImplemented
         return (self.tipo == otro.tipo
