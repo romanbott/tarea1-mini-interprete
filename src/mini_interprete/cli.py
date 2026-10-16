@@ -7,7 +7,7 @@
 
 import sys
 
-from .ast import Nodo, Numero
+from .ast import Nodo, Numero, OperacionBinaria
 from .errores import ErrorDelInterprete
 from .evaluator import evaluar
 from .lexer import tokenizar
@@ -28,6 +28,9 @@ def formatear_arbol(nodo: Nodo, prefijo: str = "", rama: str = "") -> list[str]:
     """
     if isinstance(nodo, Numero):
         return [prefijo + rama + str(nodo.valor)]
+
+    if not isinstance(nodo, OperacionBinaria):
+        raise TypeError(f"nodo desconocido: {nodo!r}")
 
     lineas = [prefijo + rama + nodo.operador]
     if rama == "":
