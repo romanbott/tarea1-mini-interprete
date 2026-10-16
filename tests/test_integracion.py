@@ -47,6 +47,10 @@ def test_resta():
     assert interpretar("10 - 3") == 7
 
 
+def test_resta_asocia_izq():
+    assert interpretar("10 - 3 - 1") == 6
+
+
 def test_multiplicacion():
     assert interpretar("6 * 7") == 42
 

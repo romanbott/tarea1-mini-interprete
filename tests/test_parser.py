@@ -38,6 +38,19 @@ def test_la_resta_agrupa_dos_numeros():
     assert Parser(tokens).parsear() == OperacionBinaria("-", Numero(10), Numero(3))
 
 
+def test_la_resta_asocia_por_la_izquierda():
+    tokens = [
+        Token(TipoToken.NUMERO, 10, 0),
+        Token(TipoToken.MENOS, "-", 1),
+        Token(TipoToken.NUMERO, 3, 2),
+        Token(TipoToken.MENOS, "-", 3),
+        Token(TipoToken.NUMERO, 1, 4),
+    ]
+    assert Parser(tokens).parsear() == OperacionBinaria(
+        "-", OperacionBinaria("-", Numero(10), Numero(3)), Numero(1)
+    )
+
+
 def test_el_producto_agrupa_dos_numeros():
     tokens = [
         Token(TipoToken.NUMERO, 6, 0),
