@@ -69,6 +69,19 @@ def test_la_division_agrupa_dos_numeros():
     assert Parser(tokens).parsear() == OperacionBinaria("/", Numero(10), Numero(2))
 
 
+def test_la_division_asocia_por_la_izquierda():
+    tokens = [
+        Token(TipoToken.NUMERO, 12, 0),
+        Token(TipoToken.ENTRE, "/", 1),
+        Token(TipoToken.NUMERO, 6, 2),
+        Token(TipoToken.ENTRE, "/", 3),
+        Token(TipoToken.NUMERO, 2, 4),
+    ]
+    assert Parser(tokens).parsear() == OperacionBinaria(
+        "/", OperacionBinaria("/", Numero(12), Numero(6)), Numero(2)
+    )
+
+
 def test_precedencia_suma_producto():
     # 3 + 4 * 2  debe agruparse como  3 + (4 * 2)
     tokens = [

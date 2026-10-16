@@ -59,6 +59,10 @@ def test_division():
     assert interpretar("10 / 2") == 5
 
 
+def test_division_asocia_izq():
+    assert interpretar("12 / 6 / 2") == 1
+
+
 def test_precedencia_sin_parentesis():
     assert interpretar("3 + 4 * 2") == 11
 
