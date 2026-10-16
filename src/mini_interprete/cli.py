@@ -32,7 +32,7 @@ def formatear_arbol(nodo: Nodo, prefijo: str = "", rama: str = "") -> list[str]:
     if not isinstance(nodo, OperacionBinaria):
         raise TypeError(f"nodo desconocido: {nodo!r}")
 
-    lineas = [prefijo + rama + nodo.operador]
+    lineas = [prefijo + rama + nodo.operador.simbolo]
     if rama == "":
         prefijo_hijos = prefijo
     elif rama.startswith("`"):

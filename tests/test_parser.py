@@ -9,6 +9,7 @@ import pytest
 
 from mini_interprete.ast import Numero, OperacionBinaria
 from mini_interprete.errores import ErrorDeSintaxis
+from mini_interprete.operadores import Operador
 from mini_interprete.parser import Parser
 from mini_interprete.tokens import TipoToken, Token
 
@@ -26,7 +27,9 @@ def test_la_suma_agrupa_dos_numeros():
         Token(TipoToken.MAS, "+", 1),
         Token(TipoToken.NUMERO, 4, 2),
     ]
-    assert Parser(tokens).parsear() == OperacionBinaria("+", Numero(3), Numero(4))
+    assert Parser(tokens).parsear() == OperacionBinaria(
+        Operador.SUMA, Numero(3), Numero(4)
+    )
 
 
 def test_la_resta_agrupa_dos_numeros():
@@ -35,7 +38,9 @@ def test_la_resta_agrupa_dos_numeros():
         Token(TipoToken.MENOS, "-", 1),
         Token(TipoToken.NUMERO, 3, 2),
     ]
-    assert Parser(tokens).parsear() == OperacionBinaria("-", Numero(10), Numero(3))
+    assert Parser(tokens).parsear() == OperacionBinaria(
+        Operador.RESTA, Numero(10), Numero(3)
+    )
 
 
 def test_la_resta_asocia_por_la_izquierda():
@@ -47,7 +52,7 @@ def test_la_resta_asocia_por_la_izquierda():
         Token(TipoToken.NUMERO, 1, 4),
     ]
     assert Parser(tokens).parsear() == OperacionBinaria(
-        "-", OperacionBinaria("-", Numero(10), Numero(3)), Numero(1)
+        Operador.RESTA, OperacionBinaria(Operador.RESTA, Numero(10), Numero(3)), Numero(1)
     )
 
 
@@ -57,7 +62,9 @@ def test_el_producto_agrupa_dos_numeros():
         Token(TipoToken.POR, "*", 1),
         Token(TipoToken.NUMERO, 7, 2),
     ]
-    assert Parser(tokens).parsear() == OperacionBinaria("*", Numero(6), Numero(7))
+    assert Parser(tokens).parsear() == OperacionBinaria(
+        Operador.PRODUCTO, Numero(6), Numero(7)
+    )
 
 
 def test_la_division_agrupa_dos_numeros():
@@ -66,7 +73,9 @@ def test_la_division_agrupa_dos_numeros():
         Token(TipoToken.ENTRE, "/", 1),
         Token(TipoToken.NUMERO, 2, 2),
     ]
-    assert Parser(tokens).parsear() == OperacionBinaria("/", Numero(10), Numero(2))
+    assert Parser(tokens).parsear() == OperacionBinaria(
+        Operador.COCIENTE, Numero(10), Numero(2)
+    )
 
 
 def test_la_division_asocia_por_la_izquierda():
@@ -78,7 +87,9 @@ def test_la_division_asocia_por_la_izquierda():
         Token(TipoToken.NUMERO, 2, 4),
     ]
     assert Parser(tokens).parsear() == OperacionBinaria(
-        "/", OperacionBinaria("/", Numero(12), Numero(6)), Numero(2)
+        Operador.COCIENTE,
+        OperacionBinaria(Operador.COCIENTE, Numero(12), Numero(6)),
+        Numero(2),
     )
 
 
@@ -92,7 +103,7 @@ def test_precedencia_suma_producto():
         Token(TipoToken.NUMERO, 2, 4),
     ]
     assert Parser(tokens).parsear() == OperacionBinaria(
-        "+", Numero(3), OperacionBinaria("*", Numero(4), Numero(2))
+        Operador.SUMA, Numero(3), OperacionBinaria(Operador.PRODUCTO, Numero(4), Numero(2))
     )
 
 
@@ -106,7 +117,7 @@ def test_precedencia_suma_producto_izq():
         Token(TipoToken.NUMERO, 4, 4),
     ]
     assert Parser(tokens).parsear() == OperacionBinaria(
-        "+", OperacionBinaria("*", Numero(2), Numero(3)), Numero(4)
+        Operador.SUMA, OperacionBinaria(Operador.PRODUCTO, Numero(2), Numero(3)), Numero(4)
     )
 
 
@@ -122,7 +133,7 @@ def test_los_parentesis_cambian_precedencia():
         Token(TipoToken.NUMERO, 2, 6),
     ]
     assert Parser(tokens).parsear() == OperacionBinaria(
-        "*", OperacionBinaria("+", Numero(3), Numero(4)), Numero(2)
+        Operador.PRODUCTO, OperacionBinaria(Operador.SUMA, Numero(3), Numero(4)), Numero(2)
     )
 
 
@@ -134,7 +145,9 @@ def test_una_operacion_entre_parentesis():
         Token(TipoToken.NUMERO, 4, 3),
         Token(TipoToken.PAR_DER, ")", 4),
     ]
-    assert Parser(tokens).parsear() == OperacionBinaria("+", Numero(3), Numero(4))
+    assert Parser(tokens).parsear() == OperacionBinaria(
+        Operador.SUMA, Numero(3), Numero(4)
+    )
 
 
 # --- Casos frontera ---
@@ -169,9 +182,9 @@ def test_anidamiento_profundo():
         Token(TipoToken.PAR_DER, ")", 12),
     ]
     assert Parser(tokens).parsear() == OperacionBinaria(
-        "*",
-        OperacionBinaria("+", Numero(2), Numero(3)),
-        OperacionBinaria("-", Numero(4), Numero(1)),
+        Operador.PRODUCTO,
+        OperacionBinaria(Operador.SUMA, Numero(2), Numero(3)),
+        OperacionBinaria(Operador.RESTA, Numero(4), Numero(1)),
     )
 
 

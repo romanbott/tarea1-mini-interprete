@@ -9,14 +9,19 @@ La gramatica que reconoce este parser es:
 Los tres niveles son lo que hace que  3 + 4 * 2  se agrupe como  3 + (4 * 2)
 y no como  (3 + 4) * 2 : la multiplicacion vive un nivel mas abajo, asi que
 se arma primero.
+
+La precedencia no se repite aqui: sale de `Operador.precedencia`, que es el
+catalogo unico de los operadores.
 """
 
 from .ast import Nodo, Numero, OperacionBinaria
 from .errores import ErrorDeSintaxis
-from .tokens import TipoToken, Token
+from .operadores import Operador, POR_SIMBOLO
+from .tokens import Token, TipoToken
 
-OPERADORES_SUMA: tuple[TipoToken, TipoToken] = (TipoToken.MAS, TipoToken.MENOS)
-OPERADORES_PRODUCTO: tuple[TipoToken, TipoToken] = (TipoToken.POR, TipoToken.ENTRE)
+# Los dos niveles de precedencia que reconoce esta gramatica.
+PRECEDENCIA_SUMA = Operador.SUMA.precedencia
+PRECEDENCIA_PRODUCTO = Operador.PRODUCTO.precedencia
 
 
 class Parser:
@@ -52,20 +57,31 @@ class Parser:
             return self.tokens[-1].posicion + 1
         return 0
 
+    def _operador_actual(self) -> Operador | None:
+        """El operador del token actual, o None si no es un operador."""
+        token = self._actual()
+        if token is None or not isinstance(token.valor, str):
+            return None
+        return POR_SIMBOLO.get(token.valor)
+
     def _expresion(self) -> Nodo:
         izquierda = self._termino()
-        while self._actual() is not None and self._actual().tipo in OPERADORES_SUMA:
-            operador = self._avanzar()
+        operador = self._operador_actual()
+        while operador is not None and operador.precedencia == PRECEDENCIA_SUMA:
+            self._avanzar()
             derecha = self._termino()
-            izquierda = OperacionBinaria(operador.valor, izquierda, derecha)
+            izquierda = OperacionBinaria(operador, izquierda, derecha)
+            operador = self._operador_actual()
         return izquierda
 
     def _termino(self) -> Nodo:
         izquierda = self._factor()
-        while self._actual() is not None and self._actual().tipo in OPERADORES_PRODUCTO:
-            operador = self._avanzar()
+        operador = self._operador_actual()
+        while operador is not None and operador.precedencia == PRECEDENCIA_PRODUCTO:
+            self._avanzar()
             derecha = self._factor()
-            izquierda = OperacionBinaria(operador.valor, izquierda, derecha)
+            izquierda = OperacionBinaria(operador, izquierda, derecha)
+            operador = self._operador_actual()
         return izquierda
 
     def _factor(self) -> Nodo:

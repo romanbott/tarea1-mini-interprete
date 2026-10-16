@@ -1,7 +1,9 @@
 """Del AST a un numero.
 
 Recorre el arbol de abajo hacia arriba: para evaluar una operacion hay que
-evaluar primero sus dos lados.
+evaluar primero sus dos lados. El "que calcula" cada operador vive en el
+catalogo `Operador`; aqui solo se le pide su funcion y se traducen los errores
+de Python a los del interprete.
 """
 
 from .ast import Nodo, Numero, OperacionBinaria
@@ -16,18 +18,9 @@ def evaluar(nodo: Nodo) -> int | float:
     if isinstance(nodo, OperacionBinaria):
         izquierda = evaluar(nodo.izquierda)
         derecha = evaluar(nodo.derecha)
-
-        if nodo.operador == "+":
-            return izquierda + derecha
-        if nodo.operador == "-":
-            return izquierda - derecha
-        if nodo.operador == "*":
-            return izquierda * derecha
-        if nodo.operador == "/":
-            if derecha == 0:
-                raise ErrorDeEvaluacion("division entre cero")
-            return izquierda / derecha
-
-        raise ErrorDeEvaluacion(f"operador desconocido: {nodo.operador!r}")
+        try:
+            return nodo.operador.funcion(izquierda, derecha)
+        except ZeroDivisionError:
+            raise ErrorDeEvaluacion("division entre cero")
 
     raise ErrorDeEvaluacion(f"nodo desconocido: {nodo!r}")

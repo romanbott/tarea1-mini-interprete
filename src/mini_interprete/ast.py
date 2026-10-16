@@ -12,6 +12,8 @@ Un Numero no contiene nada. Una OperacionBinaria contiene otros nodos, que a
 su vez pueden ser numeros u otras operaciones.
 """
 
+from .operadores import Operador
+
 
 class Nodo:
     """Cualquier cosa que pueda aparecer en el arbol."""
@@ -33,11 +35,11 @@ class Numero(Nodo):
 
 
 class OperacionBinaria(Nodo):
-    operador: str
+    operador: Operador
     izquierda: Nodo
     derecha: Nodo
 
-    def __init__(self, operador: str, izquierda: Nodo, derecha: Nodo) -> None:
+    def __init__(self, operador: Operador, izquierda: Nodo, derecha: Nodo) -> None:
         self.operador = operador
         self.izquierda = izquierda
         self.derecha = derecha
