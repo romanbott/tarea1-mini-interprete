@@ -3,6 +3,7 @@
     "3 + 4 * 2"  ->  [NUMERO(3), MAS, NUMERO(4), POR, NUMERO(2)]
 """
 
+from .errores import ErrorDeSintaxis
 from .tokens import Token, TipoToken
 
 SIMBOLOS = {
@@ -36,6 +37,6 @@ def tokenizar(texto: str) -> list:
             i += 1
 
         else:
-            i += 1
+            raise ErrorDeSintaxis(f"caracter inesperado {caracter!r}", i)
 
     return tokens
