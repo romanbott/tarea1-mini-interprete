@@ -14,10 +14,12 @@ La precedencia no se repite aqui: sale de `Operador.precedencia`, que es el
 catalogo unico de los operadores.
 """
 
+from collections.abc import Callable
+
 from .ast import Nodo, Numero, OperacionBinaria
 from .errores import ErrorDeSintaxis
-from .operadores import Operador, POR_SIMBOLO
-from .tokens import Token, TipoToken
+from .operadores import POR_SIMBOLO, Operador
+from .tokens import TipoToken, Token
 
 # Los dos niveles de precedencia que reconoce esta gramatica.
 PRECEDENCIA_SUMA = Operador.SUMA.precedencia
@@ -65,21 +67,18 @@ class Parser:
         return POR_SIMBOLO.get(token.valor)
 
     def _expresion(self) -> Nodo:
-        izquierda = self._termino()
-        operador = self._operador_actual()
-        while operador is not None and operador.precedencia == PRECEDENCIA_SUMA:
-            self._avanzar()
-            derecha = self._termino()
-            izquierda = OperacionBinaria(operador, izquierda, derecha)
-            operador = self._operador_actual()
-        return izquierda
+        return self._nivel(self._termino, PRECEDENCIA_SUMA)
 
     def _termino(self) -> Nodo:
-        izquierda = self._factor()
+        return self._nivel(self._factor, PRECEDENCIA_PRODUCTO)
+
+    def _nivel(self, siguiente: Callable[[], Nodo], precedencia: int) -> Nodo:
+        """Encadena operadores agrupando a la izquierda mientras estos tengan la misma precedencia."""
+        izquierda = siguiente()
         operador = self._operador_actual()
-        while operador is not None and operador.precedencia == PRECEDENCIA_PRODUCTO:
+        while operador is not None and operador.precedencia == precedencia:
             self._avanzar()
-            derecha = self._factor()
+            derecha = siguiente()
             izquierda = OperacionBinaria(operador, izquierda, derecha)
             operador = self._operador_actual()
         return izquierda
