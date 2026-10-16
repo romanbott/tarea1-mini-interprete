@@ -9,7 +9,7 @@ import sys
 from collections.abc import Iterable
 
 from .comandos import COMANDOS
-from .errores import ErrorDelInterprete
+from .errores import ErrorDeComando, ErrorDelInterprete
 
 # Cada bandera elige un comando; sin bandera se evalua.
 BANDERAS: dict[str, str] = {
@@ -19,7 +19,10 @@ BANDERAS: dict[str, str] = {
 
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
-    comando, argv = _elegir_comando(argv)
+    try:
+        comando, argv = _elegir_comando(argv)
+    except ErrorDeComando as error:
+        return _reportar(error)
 
     if argv:
         return _ejecutar(comando, " ".join(argv))
@@ -43,6 +46,8 @@ def _elegir_comando(argv: list[str]) -> tuple[str, list[str]]:
     for arg in argv:
         if arg in BANDERAS:
             comando = BANDERAS[arg]
+        elif arg.startswith("--"):
+            raise ErrorDeComando(f"comando no encontrado: {arg!r}")
         else:
             resto.append(arg)
     return comando, resto
@@ -54,8 +59,13 @@ def _ejecutar(comando: str, texto: str) -> int:
         print(COMANDOS[comando](texto))
         return 0
     except ErrorDelInterprete as error:
-        print(f"Error: {error}", file=sys.stderr)
-        return 1
+        return _reportar(error)
+
+
+def _reportar(error: ErrorDelInterprete) -> int:
+    """Imprime el error en stderr y regresa el codigo de fallo."""
+    print(f"Error: {error}", file=sys.stderr)
+    return 1
 
 
 if __name__ == "__main__":
