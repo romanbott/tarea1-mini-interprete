@@ -24,3 +24,7 @@ class ErrorDeSintaxis(ErrorDelInterprete):
 
 class ErrorDeEvaluacion(ErrorDelInterprete):
     """La expresion es valida pero no se puede evaluar."""
+
+
+class ErrorDeComando(ErrorDelInterprete):
+    """La linea de comandos no pudo elegir un comando valido."""
