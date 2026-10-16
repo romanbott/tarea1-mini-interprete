@@ -2,6 +2,8 @@
 
 python3 interprete.py "3 + 4 * 2"            evalua (por defecto)
 python3 interprete.py --arbol "3 + 4 * 2"    dibuja el AST
+python3 interprete.py --tokenizar "3 + 4"    muestra los tokens
+python3 interprete.py --parsear "3 + 4"      muestra el AST
 python3 interprete.py                        (interactivo, Ctrl-D para salir)
 """
 
@@ -14,6 +16,8 @@ from .errores import ErrorDeComando, ErrorDelInterprete
 # Cada bandera elige un comando; sin bandera se evalua.
 BANDERAS: dict[str, str] = {
     "--arbol": "arbol",
+    "--tokenizar": "tokenizar",
+    "--parsear": "parsear",
 }
 
 

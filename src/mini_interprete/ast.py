@@ -45,7 +45,7 @@ class OperacionBinaria(Nodo):
         self.derecha = derecha
 
     def __repr__(self) -> str:
-        return (f"OperacionBinaria({self.operador!r}, "
+        return (f"OperacionBinaria({self.operador.simbolo!r}, "
                 f"{self.izquierda!r}, {self.derecha!r})")
 
     def __eq__(self, otro: object) -> bool:

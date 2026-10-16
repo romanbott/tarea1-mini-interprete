@@ -38,3 +38,8 @@ class Token:
         return (self.tipo == otro.tipo
                 and self.valor == otro.valor
                 and self.posicion == otro.posicion)
+
+
+def formatear_tokens(tokens: list[Token]) -> list[str]:
+    """Una linea de texto por token."""
+    return [repr(token) for token in tokens]

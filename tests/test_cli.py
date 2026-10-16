@@ -27,6 +27,14 @@ def test_la_bandera_puede_ir_despues_de_la_expresion():
     assert _elegir_comando(["3 + 4", "--arbol"]) == ("arbol", ["3 + 4"])
 
 
+def test_la_bandera_tokenizar_selecciona_su_comando():
+    assert _elegir_comando(["--tokenizar", "3 + 4"]) == ("tokenizar", ["3 + 4"])
+
+
+def test_la_bandera_parsear_selecciona_su_comando():
+    assert _elegir_comando(["--parsear", "3 + 4"]) == ("parsear", ["3 + 4"])
+
+
 def test_una_bandera_inexistente_falla():
     with pytest.raises(ErrorDeComando) as error:
         _elegir_comando(["--comando_inexistente", "3 + 4"])
@@ -42,6 +50,18 @@ def test_el_comando_evaluar():
 
 def test_el_comando_arbol():
     assert COMANDOS["arbol"]("3 + 4").splitlines() == ["+", "|-- 3", "`-- 4"]
+
+
+def test_el_comando_tokenizar():
+    assert COMANDOS["tokenizar"]("3 + 4").splitlines() == [
+        "Token(NUMERO, 3, 0)",
+        "Token(MAS, '+', 2)",
+        "Token(NUMERO, 4, 4)",
+    ]
+
+
+def test_el_comando_parsear():
+    assert COMANDOS["parsear"]("3 + 4") == "OperacionBinaria('+', Numero(3), Numero(4))"
 
 
 # --- Codigos de salida ---
