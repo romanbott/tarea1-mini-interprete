@@ -6,8 +6,11 @@ la integración de varios pasos del _pipeline_:
 - El pipeline completo
 """
 
+import pytest
+
 from mini_interprete.ast import Numero, OperacionBinaria
 from mini_interprete.cli import interpretar
+from mini_interprete.errores import ErrorDeSintaxis
 from mini_interprete.lexer import tokenizar
 from mini_interprete.parser import Parser
 
@@ -69,3 +72,8 @@ def test_precedencia_sin_parentesis():
 
 def test_precedencia_con_parentesis():
     assert interpretar("(3 + 4) * 2") == 14
+
+
+def test_simbolo_desconocido():
+    with pytest.raises(ErrorDeSintaxis):
+        interpretar("3 @ + 3")
