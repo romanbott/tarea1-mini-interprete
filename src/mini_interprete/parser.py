@@ -9,67 +9,97 @@ La gramatica que reconoce este parser es:
 Los tres niveles son lo que hace que  3 + 4 * 2  se agrupe como  3 + (4 * 2)
 y no como  (3 + 4) * 2 : la multiplicacion vive un nivel mas abajo, asi que
 se arma primero.
+
+La precedencia no se repite aqui: sale de `Operador.precedencia`, que es el
+catalogo unico de los operadores.
 """
 
-from .ast import Numero, OperacionBinaria
-from .errores import ErrorDeSintaxis
-from .tokens import TipoToken
+from collections.abc import Callable
 
-OPERADORES_SUMA = (TipoToken.MAS, TipoToken.MENOS)
-OPERADORES_PRODUCTO = (TipoToken.POR, TipoToken.ENTRE)
+from .ast import Nodo, Numero, OperacionBinaria
+from .errores import ErrorDeSintaxis
+from .operadores import POR_SIMBOLO, Operador
+from .tokens import TipoToken, Token
+
+# Los dos niveles de precedencia que reconoce esta gramatica.
+PRECEDENCIA_SUMA = Operador.SUMA.precedencia
+PRECEDENCIA_PRODUCTO = Operador.PRODUCTO.precedencia
 
 
 class Parser:
-
-    def __init__(self, tokens: list):
+    def __init__(self, tokens: list[Token]) -> None:
         self.tokens = tokens
         self.pos = 0
 
-    def parsear(self):
+    def parsear(self) -> Nodo:
         """Construye el AST de la lista de tokens."""
-        return self._expresion()
+        nodo = self._expresion()
+        sobrante = self._actual()
+        if sobrante is not None:
+            raise ErrorDeSintaxis(
+                f"token inesperado {sobrante.valor!r}", sobrante.posicion
+            )
+        return nodo
 
-    def _actual(self):
+    def _actual(self) -> Token | None:
         """El token en la posicion actual, o None si ya no quedan."""
         if self.pos < len(self.tokens):
             return self.tokens[self.pos]
         return None
 
-    def _avanzar(self):
+    def _avanzar(self) -> Token:
         """Consume el token actual y lo regresa."""
         token = self.tokens[self.pos]
         self.pos += 1
         return token
 
-    def _expresion(self):
-        izquierda = self._termino()
-        actual = self._actual()
-        if actual is not None and actual.tipo in OPERADORES_SUMA:
-            operador = self._avanzar()
-            derecha = self._expresion()
-            return OperacionBinaria(operador.valor, izquierda, derecha)
+    def _posicion_final(self) -> int:
+        """La posicion justo despues del ultimo token (el final del texto)."""
+        if self.tokens:
+            return self.tokens[-1].posicion + 1
+        return 0
+
+    def _operador_actual(self) -> Operador | None:
+        """El operador del token actual, o None si no es un operador."""
+        token = self._actual()
+        if token is None or not isinstance(token.valor, str):
+            return None
+        return POR_SIMBOLO.get(token.valor)
+
+    def _expresion(self) -> Nodo:
+        return self._nivel(self._termino, PRECEDENCIA_SUMA)
+
+    def _termino(self) -> Nodo:
+        return self._nivel(self._factor, PRECEDENCIA_PRODUCTO)
+
+    def _nivel(self, siguiente: Callable[[], Nodo], precedencia: int) -> Nodo:
+        """Encadena operadores agrupando a la izquierda mientras estos tengan la misma precedencia."""
+        izquierda = siguiente()
+        operador = self._operador_actual()
+        while operador is not None and operador.precedencia == precedencia:
+            self._avanzar()
+            derecha = siguiente()
+            izquierda = OperacionBinaria(operador, izquierda, derecha)
+            operador = self._operador_actual()
         return izquierda
 
-    def _termino(self):
-        izquierda = self._factor()
-        actual = self._actual()
-        if actual is not None and actual.tipo in OPERADORES_PRODUCTO:
-            operador = self._avanzar()
-            derecha = self._termino()
-            return OperacionBinaria(operador.valor, izquierda, derecha)
-        return izquierda
-
-    def _factor(self):
-        token = self._avanzar()
+    def _factor(self) -> Nodo:
+        token = self._actual()
+        if token is None:
+            raise ErrorDeSintaxis("se esperaba una expresion", self._posicion_final())
+        self._avanzar()
 
         if token.tipo == TipoToken.NUMERO:
             return Numero(token.valor)
 
         if token.tipo == TipoToken.PAR_IZQ:
             nodo = self._expresion()
-            cierre = self._avanzar()
+            cierre = self._actual()
+            if cierre is None:
+                raise ErrorDeSintaxis("se esperaba ')'", self._posicion_final())
             if cierre.tipo != TipoToken.PAR_DER:
                 raise ErrorDeSintaxis("se esperaba ')'", cierre.posicion)
+            self._avanzar()
             return nodo
 
         raise ErrorDeSintaxis(f"token inesperado {token.valor!r}", token.posicion)

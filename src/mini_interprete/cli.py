@@ -1,74 +1,76 @@
 """Linea de comandos del interprete.
 
-    python3 interprete.py "3 + 4 * 2"
-    python3 interprete.py --arbol "3 + 4 * 2"
-    python3 interprete.py                     (interactivo, Ctrl-D para salir)
+python3 interprete.py "3 + 4 * 2"            evalua (por defecto)
+python3 interprete.py --arbol "3 + 4 * 2"    dibuja el AST
+python3 interprete.py --tokenizar "3 + 4"    muestra los tokens
+python3 interprete.py --parsear "3 + 4"      muestra el AST
+python3 interprete.py                        (interactivo, Ctrl-D para salir)
 """
 
 import sys
+from collections.abc import Iterable
 
-from .ast import Numero
-from .errores import ErrorDelInterprete
-from .evaluator import evaluar
-from .lexer import tokenizar
-from .parser import Parser
+from .comandos import COMANDOS
+from .errores import ErrorDeComando, ErrorDelInterprete
 
-
-def interpretar(texto: str):
-    """texto -> tokens -> AST -> valor. El recorrido completo, en una linea."""
-    return evaluar(Parser(tokenizar(texto)).parsear())
-
-
-def formatear_arbol(nodo, prefijo: str = "", rama: str = "") -> list:
-    """Dibuja el AST como un arbol de texto.
-
-    Sirve para VER como quedo agrupada una expresion, en vez de suponerlo.
-    Es la misma idea que el imprimirPorNiveles() de la Practica 3: cuando algo
-    no cuadra, lo primero es mirar la estructura.
-    """
-    if isinstance(nodo, Numero):
-        return [prefijo + rama + str(nodo.valor)]
-
-    lineas = [prefijo + rama + nodo.operador]
-    if rama == "":
-        prefijo_hijos = prefijo
-    elif rama.startswith("`"):
-        prefijo_hijos = prefijo + "    "
-    else:
-        prefijo_hijos = prefijo + "|   "
-
-    lineas += formatear_arbol(nodo.izquierda, prefijo_hijos, "|-- ")
-    lineas += formatear_arbol(nodo.derecha, prefijo_hijos, "`-- ")
-    return lineas
+# Cada bandera elige un comando; sin bandera se evalua.
+BANDERAS: dict[str, str] = {
+    "--arbol": "arbol",
+    "--tokenizar": "tokenizar",
+    "--parsear": "parsear",
+}
 
 
-def main(argv=None) -> int:
+def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
-
-    mostrar_arbol = "--arbol" in argv
-    argv = [a for a in argv if a != "--arbol"]
+    try:
+        comando, argv = _elegir_comando(argv)
+    except ErrorDeComando as error:
+        return _reportar(error)
 
     if argv:
-        return _una_expresion(" ".join(argv), mostrar_arbol)
+        return _ejecutar(comando, " ".join(argv))
 
-    for linea in sys.stdin:
+    return _procesar_entrada(comando, sys.stdin)
+
+
+def _procesar_entrada(comando: str, flujo: Iterable[str]) -> int:
+    """Corre el comando sobre cada linea de la entrada."""
+    codigo = 0
+    for linea in flujo:
         linea = linea.strip()
-        if linea:
-            _una_expresion(linea, mostrar_arbol)
-    return 0
+        if linea and _ejecutar(comando, linea):
+            codigo = 1
+    return codigo
 
 
-def _una_expresion(texto: str, mostrar_arbol: bool = False) -> int:
+def _elegir_comando(argv: list[str]) -> tuple[str, list[str]]:
+    """Separa la bandera (si la hay) del texto de la expresion."""
+    comando = "evaluar"
+    resto = []
+    for arg in argv:
+        if arg in BANDERAS:
+            comando = BANDERAS[arg]
+        elif arg.startswith("--"):
+            raise ErrorDeComando(f"comando no encontrado: {arg!r}")
+        else:
+            resto.append(arg)
+    return comando, resto
+
+
+def _ejecutar(comando: str, texto: str) -> int:
+    """Corre el comando, imprime su salida y regresa el codigo de salida."""
     try:
-        if mostrar_arbol:
-            arbol = Parser(tokenizar(texto)).parsear()
-            print("\n".join(formatear_arbol(arbol)))
-            return 0
-        print(interpretar(texto))
+        print(COMANDOS[comando](texto))
         return 0
     except ErrorDelInterprete as error:
-        print(f"Error: {error}", file=sys.stderr)
-        return 1
+        return _reportar(error)
+
+
+def _reportar(error: ErrorDelInterprete) -> int:
+    """Imprime el error en stderr y regresa el codigo de fallo."""
+    print(f"Error: {error}", file=sys.stderr)
+    return 1
 
 
 if __name__ == "__main__":
